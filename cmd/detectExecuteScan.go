@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 	"io"
+	"strings"
 
 	sliceUtils "github.com/SAP/jenkins-library/pkg/piperutils"
 
@@ -23,12 +23,13 @@ type buildExecRunner interface {
 	RunExecutable(e string, p ...string) error
 }
 
-func detectExecuteScan(config detectExecuteScanOptions, telemetryData *telemetry.CustomData, mavenCommand buildExecRunner) {
+func detectExecuteScan(config detectExecuteScanOptions, telemetryData *telemetry.CustomData) {
 	c := command.Command{}
+	c1 := command.Command{}
 	// reroute command output to logging framework
 	c.Stdout(log.Writer())
 	c.Stderr(log.Writer())
-	runDetect(config, &c, mavenCommand)
+	runDetect(config, &c, &c1)
 }
 
 func runDetect(config detectExecuteScanOptions, command command.ShellRunner, mavenCommand buildExecRunner) {
