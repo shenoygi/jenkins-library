@@ -23,18 +23,18 @@ type buildExecRunner interface {
 	RunExecutable(e string, p ...string) error
 }
 
-func detectExecuteScan(config detectExecuteScanOptions, telemetryData *telemetry.CustomData) {
+func detectExecuteScan(config detectExecuteScanOptions, telemetryData *telemetry.CustomData, mavenCommand buildExecRunner) {
 	c := command.Command{}
 	// reroute command output to logging framework
 	c.Stdout(log.Writer())
 	c.Stderr(log.Writer())
-	runDetect(config, &c)
+	runDetect(config, &c, mavenCommand)
 }
 
-func runDetect(config detectExecuteScanOptions, command command.ShellRunner) {
+func runDetect(config detectExecuteScanOptions, command command.ShellRunner, mavenCommand buildExecRunner) {
 	// detect execution details, see https://synopsys.atlassian.net/wiki/spaces/INTDOCS/pages/88440888/Sample+Synopsys+Detect+Scan+Configuration+Scenarios+for+Black+Duck
 
-	buildArtifacts(config, classpathFileNameDetectExecute)
+	buildArtifacts(config, classpathFileNameDetectExecute, mavenCommand)
 	args := []string{"bash <(curl -s https://detect.synopsys.com/detect.sh)"}
 	args = addDetectArgs(args, config)
 	script := strings.Join(args, " ")
@@ -50,19 +50,18 @@ func runDetect(config detectExecuteScanOptions, command command.ShellRunner) {
 	}
 }
 
-func buildArtifacts(config detectExecuteScanOptions, file string) {
-	var buildExec buildExecRunner
+func buildArtifacts(config detectExecuteScanOptions, file string, mavenCommand buildExecRunner) {
 	if config.BuildTool == "maven" {
 		executeOptions := maven.ExecuteOptions{
 			PomPath:             config.BuildDescriptorFile,
 			ProjectSettingsFile: config.ProjectSettingsFile,
 			GlobalSettingsFile:  config.GlobalSettingsFile,
 			M2Path:              config.M2Path,
-			Goals:               []string{"clean install"},
+			Goals:               []string{"install:install"},
 			Defines:             []string{fmt.Sprintf("-Dmdep.outputFile=%v", file), "-DincludeScope=compile"},
 			ReturnStdout:        false,
 		}
-		_, err := maven.Execute(&executeOptions, buildExec)
+		_, err := maven.Execute(&executeOptions, mavenCommand)
 		if err != nil {
 			log.Entry().WithError(err).Warn("failed to determine classpath using Maven")
 		}
