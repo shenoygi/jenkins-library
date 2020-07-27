@@ -14,17 +14,22 @@ import (
 )
 
 type detectExecuteScanOptions struct {
-	APIToken        string   `json:"apiToken,omitempty"`
-	CodeLocation    string   `json:"codeLocation,omitempty"`
-	ProjectName     string   `json:"projectName,omitempty"`
-	Scanners        []string `json:"scanners,omitempty"`
-	ScanPaths       []string `json:"scanPaths,omitempty"`
-	ScanProperties  []string `json:"scanProperties,omitempty"`
-	ServerURL       string   `json:"serverUrl,omitempty"`
-	Groups          []string `json:"groups,omitempty"`
-	FailOn          []string `json:"failOn,omitempty"`
-	Version         string   `json:"version,omitempty"`
-	VersioningModel string   `json:"versioningModel,omitempty"`
+	APIToken            string   `json:"apiToken,omitempty"`
+	CodeLocation        string   `json:"codeLocation,omitempty"`
+	ProjectName         string   `json:"projectName,omitempty"`
+	Scanners            []string `json:"scanners,omitempty"`
+	ScanPaths           []string `json:"scanPaths,omitempty"`
+	ScanProperties      []string `json:"scanProperties,omitempty"`
+	ServerURL           string   `json:"serverUrl,omitempty"`
+	Groups              []string `json:"groups,omitempty"`
+	FailOn              []string `json:"failOn,omitempty"`
+	Version             string   `json:"version,omitempty"`
+	VersioningModel     string   `json:"versioningModel,omitempty"`
+	BuildTool           string   `json:"buildTool,omitempty"`
+	BuildDescriptorFile string   `json:"buildDescriptorFile,omitempty"`
+	ProjectSettingsFile string   `json:"projectSettingsFile,omitempty"`
+	GlobalSettingsFile  string   `json:"globalSettingsFile,omitempty"`
+	M2Path              string   `json:"m2Path,omitempty"`
 }
 
 // DetectExecuteScanCommand Executes Synopsys Detect scan
@@ -96,6 +101,11 @@ func addDetectExecuteScanFlags(cmd *cobra.Command, stepConfig *detectExecuteScan
 	cmd.Flags().StringSliceVar(&stepConfig.FailOn, "failOn", []string{`BLOCKER`}, "Mark the current build as fail based on the policy categories applied.")
 	cmd.Flags().StringVar(&stepConfig.Version, "version", os.Getenv("PIPER_version"), "Defines the version number of the artifact being build in the pipeline. It is used as source for the Detect version.")
 	cmd.Flags().StringVar(&stepConfig.VersioningModel, "versioningModel", `major`, "The versioning model used for result reporting (based on the artifact version). Example 1.2.3 using `major` will result in version 1")
+	cmd.Flags().StringVar(&stepConfig.BuildTool, "buildTool", `maven`, "Scan type used for the step which can be `'maven'`, `'pip'`")
+	cmd.Flags().StringVar(&stepConfig.BuildDescriptorFile, "buildDescriptorFile", os.Getenv("PIPER_buildDescriptorFile"), "Path to the build descriptor file addressing the module/folder to be scanned. Defaults are for buildTool=`maven`: `./pom.xml`, buildTool=`pip`: `./setup.py`.")
+	cmd.Flags().StringVar(&stepConfig.ProjectSettingsFile, "projectSettingsFile", os.Getenv("PIPER_projectSettingsFile"), "Path to the mvn settings file that should be used as project settings file.")
+	cmd.Flags().StringVar(&stepConfig.GlobalSettingsFile, "globalSettingsFile", os.Getenv("PIPER_globalSettingsFile"), "Path to the mvn settings file that should be used as global settings file.")
+	cmd.Flags().StringVar(&stepConfig.M2Path, "m2Path", os.Getenv("PIPER_m2Path"), "Path to the location of the local repository that should be used.")
 
 	cmd.MarkFlagRequired("apiToken")
 	cmd.MarkFlagRequired("projectName")
@@ -198,6 +208,46 @@ func detectExecuteScanMetadata() config.StepData {
 						Type:        "string",
 						Mandatory:   false,
 						Aliases:     []config.Alias{},
+					},
+					{
+						Name:        "buildTool",
+						ResourceRef: []config.ResourceReference{},
+						Scope:       []string{"GENERAL", "PARAMETERS", "STAGES", "STEPS"},
+						Type:        "string",
+						Mandatory:   false,
+						Aliases:     []config.Alias{},
+					},
+					{
+						Name:        "buildDescriptorFile",
+						ResourceRef: []config.ResourceReference{},
+						Scope:       []string{"PARAMETERS", "STAGES", "STEPS"},
+						Type:        "string",
+						Mandatory:   false,
+						Aliases:     []config.Alias{},
+					},
+					{
+						Name:        "projectSettingsFile",
+						ResourceRef: []config.ResourceReference{},
+						Scope:       []string{"GENERAL", "STEPS", "STAGES", "PARAMETERS"},
+						Type:        "string",
+						Mandatory:   false,
+						Aliases:     []config.Alias{{Name: "maven/projectSettingsFile"}},
+					},
+					{
+						Name:        "globalSettingsFile",
+						ResourceRef: []config.ResourceReference{},
+						Scope:       []string{"GENERAL", "STEPS", "STAGES", "PARAMETERS"},
+						Type:        "string",
+						Mandatory:   false,
+						Aliases:     []config.Alias{{Name: "maven/globalSettingsFile"}},
+					},
+					{
+						Name:        "m2Path",
+						ResourceRef: []config.ResourceReference{},
+						Scope:       []string{"GENERAL", "STEPS", "STAGES", "PARAMETERS"},
+						Type:        "string",
+						Mandatory:   false,
+						Aliases:     []config.Alias{{Name: "maven/m2Path"}},
 					},
 				},
 			},

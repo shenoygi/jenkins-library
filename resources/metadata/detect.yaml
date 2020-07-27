@@ -172,6 +172,55 @@ spec:
           - major-minor
           - semantic
           - full
+      - name: buildTool
+        type: string
+        description: "Scan type used for the step which can be `'maven'`, `'pip'`"
+        scope:
+          - GENERAL
+          - PARAMETERS
+          - STAGES
+          - STEPS
+        default: maven
+      - name: buildDescriptorFile
+        type: string
+        description: "Path to the build descriptor file addressing the module/folder
+          to be scanned. Defaults are for buildTool=`maven`: `./pom.xml`, buildTool=`pip`:
+          `./setup.py`."
+        scope:
+          - PARAMETERS
+          - STAGES
+          - STEPS
+      # Global maven settings, should be added to all maven steps
+      - name: projectSettingsFile
+        type: string
+        description: Path to the mvn settings file that should be used as project settings file.
+        scope:
+          - GENERAL
+          - STEPS
+          - STAGES
+          - PARAMETERS
+        aliases:
+          - name: maven/projectSettingsFile
+      - name: globalSettingsFile
+        type: string
+        description: Path to the mvn settings file that should be used as global settings file.
+        scope:
+          - GENERAL
+          - STEPS
+          - STAGES
+          - PARAMETERS
+        aliases:
+          - name: maven/globalSettingsFile
+      - name: m2Path
+        type: string
+        description: Path to the location of the local repository that should be used.
+        scope:
+          - GENERAL
+          - STEPS
+          - STAGES
+          - PARAMETERS
+        aliases:
+          - name: maven/m2Path  
   containers:
     - name: openjdk
       image: openjdk:11

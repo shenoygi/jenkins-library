@@ -3,14 +3,25 @@ package cmd
 import (
 	"fmt"
 	"strings"
+	"io"
 
 	sliceUtils "github.com/SAP/jenkins-library/pkg/piperutils"
 
 	"github.com/SAP/jenkins-library/pkg/command"
 	"github.com/SAP/jenkins-library/pkg/log"
+	"github.com/SAP/jenkins-library/pkg/maven"
 	"github.com/SAP/jenkins-library/pkg/telemetry"
 	"github.com/SAP/jenkins-library/pkg/versioning"
 )
+
+const classpathFileNameDetectExecute = "detect-execute-scan-cp.txt"
+
+type buildExecRunner interface {
+	Stdout(out io.Writer)
+	Stderr(err io.Writer)
+	SetDir(d string)
+	RunExecutable(e string, p ...string) error
+}
 
 func detectExecuteScan(config detectExecuteScanOptions, telemetryData *telemetry.CustomData) {
 	c := command.Command{}
@@ -23,6 +34,7 @@ func detectExecuteScan(config detectExecuteScanOptions, telemetryData *telemetry
 func runDetect(config detectExecuteScanOptions, command command.ShellRunner) {
 	// detect execution details, see https://synopsys.atlassian.net/wiki/spaces/INTDOCS/pages/88440888/Sample+Synopsys+Detect+Scan+Configuration+Scenarios+for+Black+Duck
 
+	buildArtifacts(config, classpathFileNameDetectExecute)
 	args := []string{"bash <(curl -s https://detect.synopsys.com/detect.sh)"}
 	args = addDetectArgs(args, config)
 	script := strings.Join(args, " ")
@@ -35,6 +47,25 @@ func runDetect(config detectExecuteScanOptions, command command.ShellRunner) {
 		log.Entry().
 			WithError(err).
 			Fatal("failed to execute detect scan")
+	}
+}
+
+func buildArtifacts(config detectExecuteScanOptions, file string) {
+	var buildExec buildExecRunner
+	if config.BuildTool == "maven" {
+		executeOptions := maven.ExecuteOptions{
+			PomPath:             config.BuildDescriptorFile,
+			ProjectSettingsFile: config.ProjectSettingsFile,
+			GlobalSettingsFile:  config.GlobalSettingsFile,
+			M2Path:              config.M2Path,
+			Goals:               []string{"clean install"},
+			Defines:             []string{fmt.Sprintf("-Dmdep.outputFile=%v", file), "-DincludeScope=compile"},
+			ReturnStdout:        false,
+		}
+		_, err := maven.Execute(&executeOptions, buildExec)
+		if err != nil {
+			log.Entry().WithError(err).Warn("failed to determine classpath using Maven")
+		}
 	}
 }
 
