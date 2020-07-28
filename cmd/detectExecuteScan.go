@@ -52,7 +52,7 @@ func runDetect(config detectExecuteScanOptions, command command.ShellRunner, e c
 
 	if config.BuildTool == "maven" {
 		installMavenArtifactsForDetectExecute(e, config)
-		mavenDependencyResolve(config, e)
+		//mavenDependencyResolve(config, e)
 		//buildArtifacts(config, classpathFileNameDetectExecute, mavenCommand)
 		//if err != nil {
 		//	return err
