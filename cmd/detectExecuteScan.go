@@ -121,7 +121,7 @@ func mavenDependencyResolve(config detectExecuteScanOptions, e command.ExecRunne
 	}
 }
 
-func buildArtifacts(config detectExecuteScanOptions, file string, mavenCommand buildExecRunner) {
+/* func buildArtifacts(config detectExecuteScanOptions, file string, mavenCommand buildExecRunner) {
 	if config.BuildTool == "maven" {
 		executeOptions := maven.ExecuteOptions{
 			PomPath:             config.BuildDescriptorFile,
@@ -137,7 +137,7 @@ func buildArtifacts(config detectExecuteScanOptions, file string, mavenCommand b
 			log.Entry().WithError(err).Warn("failed to determine classpath using Maven")
 		}
 	}
-}
+} */
 
 func addDetectArgs(args []string, config detectExecuteScanOptions) []string {
 
