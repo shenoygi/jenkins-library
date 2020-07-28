@@ -3,13 +3,13 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"strings"
 	"path/filepath"
+	"strings"
 
 	//sliceUtils "github.com/SAP/jenkins-library/pkg/piperutils"
-	
-	piperhttp "github.com/SAP/jenkins-library/pkg/http"
+
 	"github.com/SAP/jenkins-library/pkg/command"
+	piperhttp "github.com/SAP/jenkins-library/pkg/http"
 	"github.com/SAP/jenkins-library/pkg/log"
 	"github.com/SAP/jenkins-library/pkg/maven"
 	"github.com/SAP/jenkins-library/pkg/piperutils"
@@ -50,14 +50,13 @@ func detectExecuteScan(config detectExecuteScanOptions, telemetryData *telemetry
 func runDetect(config detectExecuteScanOptions, command command.ShellRunner, e command.ExecRunner) {
 	// detect execution details, see https://synopsys.atlassian.net/wiki/spaces/INTDOCS/pages/88440888/Sample+Synopsys+Detect+Scan+Configuration+Scenarios+for+Black+Duck
 
-	
 	if config.BuildTool == "maven" {
 		installMavenArtifactsForDetectExecute(e, config)
 		mavenDependencyResolve(config, e)
 		//buildArtifacts(config, classpathFileNameDetectExecute, mavenCommand)
-			//if err != nil {
-			//	return err
-			//}
+		//if err != nil {
+		//	return err
+		//}
 	} else {
 		log.Entry().Info("No maven build ,continuing without build, found BuildTool :", config.BuildTool)
 	}
@@ -90,7 +89,7 @@ func installMavenArtifactsForDetectExecute(e command.ExecRunner, config detectEx
 	return nil
 }
 
-func mavenDependencyResolve(config detectExecuteScanOptions, e command.ExecRunner){
+func mavenDependencyResolve(config detectExecuteScanOptions, e command.ExecRunner) {
 	pomFiles, err := newUtils().Glob(filepath.Join("**", "pom.xml"))
 	if err != nil {
 		log.Entry().WithError(err).Warn("no pom xml found")
@@ -112,7 +111,7 @@ func mavenDependencyResolve(config detectExecuteScanOptions, e command.ExecRunne
 			M2Path:              config.M2Path,
 			Goals:               []string{"dependency:resolve"},
 			//Defines:             []string{fmt.Sprintf("-Dmdep.outputFile=%v", file), "-DincludeScope=compile"},
-			ReturnStdout:        true,
+			ReturnStdout: true,
 		}
 		_, err := maven.Execute(&executeOptions, e)
 		if err != nil {
