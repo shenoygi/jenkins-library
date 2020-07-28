@@ -59,8 +59,10 @@ func buildArtifacts(config detectExecuteScanOptions, file string, mavenCommand b
 			GlobalSettingsFile:  config.GlobalSettingsFile,
 			M2Path:              config.M2Path,
 			Goals:               []string{"install"},
-			Defines:             []string{fmt.Sprintf("-Dmdep.outputFile=%v", file), "-DincludeScope=compile"},
-			ReturnStdout:        false,
+			//Defines:             []string{fmt.Sprintf("-Dmdep.outputFile=%v", file), "-DincludeScope=compile"},
+			ReturnStdout:        true,
+			verbose:			 true,
+
 		}
 		_, err := maven.Execute(&executeOptions, mavenCommand)
 		if err != nil {
