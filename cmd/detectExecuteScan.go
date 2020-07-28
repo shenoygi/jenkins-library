@@ -59,7 +59,7 @@ func runDetect(config detectExecuteScanOptions, command command.ShellRunner, e c
 			//	return err
 			//}
 	} else {
-		log.Entry().Info("Continuing without build, found BuildTool :", config.BuildTool)
+		log.Entry().Info("No maven build ,continuing without build, found BuildTool :", config.BuildTool)
 	}
 	args := []string{"bash <(curl -s https://detect.synopsys.com/detect.sh)"}
 	args = addDetectArgs(args, config)

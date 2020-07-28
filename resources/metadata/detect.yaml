@@ -174,22 +174,13 @@ spec:
           - full
       - name: buildTool
         type: string
-        description: "Scan type used for the step which can be `'maven'`, `'pip'`"
+        description: "Scan type used for the step which can be `'maven'`"
         scope:
           - GENERAL
           - PARAMETERS
           - STAGES
           - STEPS
         default: maven
-      - name: buildDescriptorFile
-        type: string
-        description: "Path to the build descriptor file addressing the module/folder
-          to be scanned. Defaults are for buildTool=`maven`: `./pom.xml`, buildTool=`pip`:
-          `./setup.py`."
-        scope:
-          - PARAMETERS
-          - STAGES
-          - STEPS
       # Global maven settings, should be added to all maven steps
       - name: projectSettingsFile
         type: string
