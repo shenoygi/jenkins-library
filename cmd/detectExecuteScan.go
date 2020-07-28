@@ -5,11 +5,12 @@ import (
 	"io"
 	"strings"
 
-	sliceUtils "github.com/SAP/jenkins-library/pkg/piperutils"
+	//sliceUtils "github.com/SAP/jenkins-library/pkg/piperutils"
 
 	"github.com/SAP/jenkins-library/pkg/command"
 	"github.com/SAP/jenkins-library/pkg/log"
 	"github.com/SAP/jenkins-library/pkg/maven"
+	"github.com/SAP/jenkins-library/pkg/piperutils"
 	"github.com/SAP/jenkins-library/pkg/telemetry"
 	"github.com/SAP/jenkins-library/pkg/versioning"
 )
@@ -25,17 +26,23 @@ type buildExecRunner interface {
 
 func detectExecuteScan(config detectExecuteScanOptions, telemetryData *telemetry.CustomData) {
 	c := command.Command{}
-	c1 := command.Command{}
+	e := command.Command{}
 	// reroute command output to logging framework
 	c.Stdout(log.Writer())
 	c.Stderr(log.Writer())
-	runDetect(config, &c, &c1)
+	runDetect(config, &c, &e)
 }
 
-func runDetect(config detectExecuteScanOptions, command command.ShellRunner, mavenCommand buildExecRunner) {
+func runDetect(config detectExecuteScanOptions, command command.ShellRunner, e command.ExecRunner) {
 	// detect execution details, see https://synopsys.atlassian.net/wiki/spaces/INTDOCS/pages/88440888/Sample+Synopsys+Detect+Scan+Configuration+Scenarios+for+Black+Duck
 
-	buildArtifacts(config, classpathFileNameDetectExecute, mavenCommand)
+	//buildArtifacts(config, classpathFileNameDetectExecute, mavenCommand)
+	if config.BuildTool == "maven" {
+		installMavenArtifactsForDetectExecute(e, config)
+			//if err != nil {
+			//	return err
+			//}
+	}
 	args := []string{"bash <(curl -s https://detect.synopsys.com/detect.sh)"}
 	args = addDetectArgs(args, config)
 	script := strings.Join(args, " ")
@@ -49,6 +56,20 @@ func runDetect(config detectExecuteScanOptions, command command.ShellRunner, mav
 			WithError(err).
 			Fatal("failed to execute detect scan")
 	}
+}
+
+func installMavenArtifactsForDetectExecute(e command.ExecRunner, config detectExecuteScanOptions) error {
+	pomXMLExists, err := piperutils.FileExists("pom.xml")
+	if err != nil {
+		return err
+	}
+	if pomXMLExists {
+		err = maven.InstallMavenArtifacts(e, maven.EvaluateOptions{M2Path: config.M2Path})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func buildArtifacts(config detectExecuteScanOptions, file string, mavenCommand buildExecRunner) {
@@ -104,11 +125,11 @@ func addDetectArgs(args []string, config detectExecuteScanOptions) []string {
 	}
 	args = append(args, fmt.Sprintf("--detect.code.location.name=\\\"%v\\\"", codeLocation))
 
-	if sliceUtils.ContainsString(config.Scanners, "signature") {
+	if piperutils.ContainsString(config.Scanners, "signature") {
 		args = append(args, fmt.Sprintf("--detect.blackduck.signature.scanner.paths=%v", strings.Join(config.ScanPaths, ",")))
 	}
 
-	if sliceUtils.ContainsString(config.Scanners, "source") {
+	if piperutils.ContainsString(config.Scanners, "source") {
 		args = append(args, fmt.Sprintf("--detect.source.path=%v", config.ScanPaths[0]))
 	}
 	return args
