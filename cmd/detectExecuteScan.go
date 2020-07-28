@@ -42,6 +42,8 @@ func runDetect(config detectExecuteScanOptions, command command.ShellRunner, e c
 			//if err != nil {
 			//	return err
 			//}
+	} else {
+		log.Entry().Info("Continuing without build, found BuildTool :", config.BuildTool)
 	}
 	args := []string{"bash <(curl -s https://detect.synopsys.com/detect.sh)"}
 	args = addDetectArgs(args, config)
