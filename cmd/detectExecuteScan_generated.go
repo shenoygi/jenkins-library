@@ -29,6 +29,7 @@ type detectExecuteScanOptions struct {
 	GlobalSettingsFile  string   `json:"globalSettingsFile,omitempty"`
 	M2Path              string   `json:"m2Path,omitempty"`
 	InstallArtifacts    bool     `json:"installArtifacts,omitempty"`
+	Rescan              bool     `json:"rescan,omitempty"`
 }
 
 // DetectExecuteScanCommand Executes Synopsys Detect scan
@@ -106,6 +107,7 @@ func addDetectExecuteScanFlags(cmd *cobra.Command, stepConfig *detectExecuteScan
 	cmd.Flags().StringVar(&stepConfig.GlobalSettingsFile, "globalSettingsFile", os.Getenv("PIPER_globalSettingsFile"), "Path or url to the mvn settings file that should be used as global settings file")
 	cmd.Flags().StringVar(&stepConfig.M2Path, "m2Path", os.Getenv("PIPER_m2Path"), "Path to the location of the local repository that should be used.")
 	cmd.Flags().BoolVar(&stepConfig.InstallArtifacts, "installArtifacts", false, "If enabled, it will install all artifacts to the local maven repository to make them available before running detect. This is required if any maven module has dependencies to other modules in the repository and they were not installed before.")
+	cmd.Flags().BoolVar(&stepConfig.Rescan, "rescan", true, "Rescan flag will download the rescan script supported for scanning projects which will not have a Changed BOM every scan and intends to scan frequently")
 
 	cmd.MarkFlagRequired("token")
 	cmd.MarkFlagRequired("projectName")
@@ -258,6 +260,14 @@ func detectExecuteScanMetadata() config.StepData {
 						Type:        "bool",
 						Mandatory:   false,
 						Aliases:     []config.Alias{},
+					},
+					{
+						Name:        "rescan",
+						ResourceRef: []config.ResourceReference{},
+						Scope:       []string{"STEPS", "STAGES", "PARAMETERS"},
+						Type:        "bool",
+						Mandatory:   false,
+						Aliases:     []config.Alias{{Name: "detect/rescan"}},
 					},
 				},
 			},

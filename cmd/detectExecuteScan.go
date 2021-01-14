@@ -79,7 +79,7 @@ func detectExecuteScan(config detectExecuteScanOptions, _ *telemetry.CustomData)
 
 func runDetect(config detectExecuteScanOptions, utils detectUtils) error {
 	// detect execution details, see https://synopsys.atlassian.net/wiki/spaces/INTDOCS/pages/88440888/Sample+Synopsys+Detect+Scan+Configuration+Scenarios+for+Black+Duck
-	err := utils.DownloadFile("https://detect.synopsys.com/detect.sh", "detect.sh", nil, nil)
+	err := getDetectScript(config, utils)
 	if err != nil {
 		return fmt.Errorf("failed to download 'detect.sh' script: %w", err)
 	}
@@ -118,6 +118,16 @@ func runDetect(config detectExecuteScanOptions, utils detectUtils) error {
 	utils.SetEnv(envs)
 
 	return utils.RunShell("/bin/bash", script)
+}
+
+func getDetectScript(config detectExecuteScanOptions, utils detectUtils) error {
+	if config.Rescan {
+		err := utils.DownloadFile("https://raw.githubusercontent.com/matthewb66/detect_rescan/dev/detect_rescan.sh", "detect.sh", nil, nil)
+		return err
+	} else {
+		err := utils.DownloadFile("https://detect.synopsys.com/detect.sh", "detect.sh", nil, nil)
+		return err
+	}
 }
 
 func addDetectArgs(args []string, config detectExecuteScanOptions, utils detectUtils) ([]string, error) {
@@ -161,6 +171,10 @@ func addDetectArgs(args []string, config detectExecuteScanOptions, utils detectU
 
 	if sliceUtils.ContainsString(config.Scanners, "source") {
 		args = append(args, fmt.Sprintf("--detect.source.path=%v", config.ScanPaths[0]))
+	}
+
+	if config.Rescan {
+		args = append(args, fmt.Sprintf("--report"))
 	}
 
 	mavenArgs, err := maven.DownloadAndGetMavenParameters(config.GlobalSettingsFile, config.ProjectSettingsFile, utils)

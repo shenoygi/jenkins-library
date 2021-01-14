@@ -217,6 +217,16 @@ spec:
           - STEPS
           - STAGES
           - PARAMETERS
+      - name: rescan
+        description: "Rescan flag will download the rescan script supported for scanning projects which will not have a Changed BOM every scan and intends to scan frequently"
+        aliases:
+          - name: detect/rescan
+        type: bool
+        default: true
+        scope:
+          - STEPS
+          - STAGES
+          - PARAMETERS
   containers:
     - name: openjdk
       image: openjdk:11
